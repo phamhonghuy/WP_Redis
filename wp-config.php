@@ -21,7 +21,7 @@
  */
 define('WP_REDIS_CONFIG', [
     'token' => 'abcde12345abcde12345abcde12345abcde12345abcde12345abcde12345',
-    'host' => 'redis',
+    'host' => 'localhost',
     'port' => 6379,
     'database' => 0, // change for each site
     'maxttl' => 3600 * 24 * 7, // 7 days
@@ -31,6 +31,7 @@ define('WP_REDIS_CONFIG', [
     'split_alloptions' => true,
     'strict' => true,
     'debug' => false,
+	'prefix' => 'wp_'
 ]);
 
 define('WP_REDIS_DISABLED', false);
