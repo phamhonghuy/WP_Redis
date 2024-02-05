@@ -38,10 +38,6 @@
     protected $database;
 
     private function __construct() {
-        $this->redis    = new Redis();
-        $this->host     = WP_REDIS_CONFIG['host'];
-        $this->port     = WP_REDIS_CONFIG['port'];
-        $this->database = WP_REDIS_CONFIG['database'];
     }
 
     public static function get_instance() {
@@ -56,7 +52,7 @@
     public function get_cars( $brand ) {
 
         $cars = $this->get_cars_from_redis( $brand );
-        if ( ! $cars ) {
+        if ( $cars == [] ) {
             $cars = $this->get_cars_from_database( $brand );
         }
     
@@ -71,12 +67,8 @@
             $brand_str = 'all';
         }
         $cars = [];
-        if (class_exists('Redis')) {
-            $this->redis->connect($this->host, $this->port);
-            $this->redis->select($this->database);
-            $cars = $this->redis->hget( 'cache-cars-info','cars-'.$brand_str );
-        }
-        if ( $cars ) {
+        $cars = wp_cache_get( 'cars-'.$brand_str , 'cache-cars-info');
+        if ( $cars != [] ) {
             $cars = json_decode( $cars );
         }
         return $cars;
@@ -97,27 +89,25 @@
         INNER JOIN wp_term_relationships as tr2 ON p.ID = tr2.object_id
         INNER JOIN wp_term_taxonomy as tt2 ON tr2.term_taxonomy_id = tt2.term_taxonomy_id
         INNER JOIN wp_terms as t2 ON tt2.term_id = t2.term_id
-        WHERE p.post_type LIKE 'product'
-        AND p.post_status LIKE 'publish'
+        WHERE p.post_type = 'product'
+        AND p.post_status = 'publish'
         " ;
         if ($brand) {
-            $query .= "        AND tt2.taxonomy LIKE 'pa_brand'
+            $query .= "        AND tt2.taxonomy = 'pa_brand'
             AND t.name IN( '$brand_str');";
         }else{
             $query .= ";";
             $brand_str_redis = "all";
         }
         $cars = $wpdb->get_results($query);
-        $this->redis->hset( 'cache-cars-info','cars-'.$brand_str_redis, json_encode( $cars ) );
+        wp_cache_set( 'cars-'.$brand_str_redis, json_encode( $cars ), 'cache-cars-info');
         return $cars;
     }
 
 
-    public function del_cache_cars_info() {
-        if (class_exists('Redis')) {
-            $this->redis->connect($this->host, $this->port);
-            $this->redis->select($this->database);
-            $this->redis->del('cache-cars-info');
+    public function del_cache_cars_info($post_id) {
+        if ('product' == get_post_type($post_id)) {
+            wp_cache_delete('cache-cars-info');
         }
     }
     
