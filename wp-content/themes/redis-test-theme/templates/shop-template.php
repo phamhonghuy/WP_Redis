@@ -6,7 +6,7 @@ $brands_array = $handle->get_all_brands();
 
 if (isset($_GET['brand'])) {
     $brands_get = $_GET['brand'];
-    // echo '<pre>'; var_dump($brands); die('---DEBUG HERE---');
+    //echo '<pre>'; var_dump($brands_get); die('---DEBUG HERE---');
     $brands_sel = wc_string_to_array($brands_get);
 
 } else {
@@ -33,7 +33,7 @@ $cars = $handle->get_cars($brands_sel);
 										<optgroup label="All Brands">
 											<?php
                                             foreach ($brands_array as $brand){
-                                                $selected = ($brands_sel == $brand) ? 'selected' : '';
+                                                $selected = in_array( $brand->slug, $brands_sel) ? 'selected' : '';
                                                 echo "<option value='$brand->slug' $selected>$brand->name</option>";
                                             }
                                             ?>

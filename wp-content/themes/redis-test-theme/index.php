@@ -13,9 +13,17 @@
  */
 
 get_header();
+global $wp_object_cache;
 try {
     // create redis instance
-    //var_dump(wp_cache_get('cars-bmw','cache-cars-info'));
+    //var_dump(wp_cache_supports( 'flush_group' ));
+    //var_dump(wp_cache_delete('cars-bmw','cache-cars-filter-info'));
+	//var_dump($cache);
+	//var_dump($cache->get('cars-bmw'));
+	//var_dump($cache->get('cars-bmw,lexus'));
+	//var_dump($cache->get('cars-all
+	//var_dump($wp_object_cache->flush_group('cache-cars-info'));
+    //var_dump( wp_cache_delete_multiple( ['cars-bmw','cars-bmw,lexus'],'cache-cars-info' ));
    //wp_die();
 } catch (Exception $ex) {
     echo $ex->getMessage();
