@@ -9,35 +9,42 @@
 
     private static $instance;
     
-    /**
-     * Redis
-     *
-     * @var Redis
-     */
-    protected $redis;
-
-    /**
-     * Host
-     *
-     * @var string
-     */
-    protected $host;
-
-    /**
-     * Port
-     *
-     * @var int
-     */
-    protected $port;
 
     /**
      * Database
      *
-     * @var int
+     * wpdb
      */
-    protected $database;
+    protected $db;
+
+    /**
+     * prefix
+     *
+     * @var string
+     */
+    protected $prefix;
+
+    /**
+     * terms table
+     *
+     * @var string
+     */
+    protected $terms;
+
+    /**
+     * term_taxonomy table
+     *
+     * @var string
+     */
+    protected $term_taxonomy;
+
 
     private function __construct() {
+        global $wpdb;
+        $this->db = $wpdb;
+        $this->prefix = 'wp_';
+        $this->terms = $this->prefix.'terms';
+        $this->term_taxonomy = $this->prefix.'term_taxonomy';
     }
 
     public static function get_instance() {
@@ -76,39 +83,40 @@
 
     //get_cars_from_database function
     public function get_cars_from_database( $brand ) {
-        global $wpdb;
+        
         if ($brand) {
             $brand_str = implode( "','", $brand );
             $brand_str_redis = implode( ',', $brand );  
         }
         $query = "SELECT *
         FROM wp_posts as p
-        INNER JOIN wp_term_relationships as tr ON p.ID = tr.object_id
-        INNER JOIN wp_term_taxonomy as tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
-        INNER JOIN wp_terms as t ON tt.term_id = t.term_id
-        INNER JOIN wp_term_relationships as tr2 ON p.ID = tr2.object_id
-        INNER JOIN wp_term_taxonomy as tt2 ON tr2.term_taxonomy_id = tt2.term_taxonomy_id
-        INNER JOIN wp_terms as t2 ON tt2.term_id = t2.term_id
+        INNER JOIN ".$this->prefix."term_relationships as tr ON p.ID = tr.object_id
+        INNER JOIN ".$this->prefix."term_taxonomy as tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+        INNER JOIN ".$this->prefix."terms as t ON tt.term_id = t.term_id
+        INNER JOIN ".$this->prefix."term_relationships as tr2 ON p.ID = tr2.object_id
+        INNER JOIN ".$this->prefix."term_taxonomy as tt2 ON tr2.term_taxonomy_id = tt2.term_taxonomy_id
+        INNER JOIN ".$this->prefix."terms as t2 ON tt2.term_id = t2.term_id
         WHERE p.post_type = 'product'
         AND p.post_status = 'publish'
         " ;
         if ($brand) {
             $query .= "        AND tt2.taxonomy = 'pa_brand'
-            AND t.name IN( '$brand_str');";
+                                AND t.name IN( '$brand_str')
+                                GROUP BY ID;";
         }else{
-            $query .= ";";
+            $query .= "GROUP BY ID;";
             $brand_str_redis = "all";
         }
-        $cars = $wpdb->get_results($query);
+        $cars = $this->db->get_results($query);
         wp_cache_set( 'cars-'.$brand_str_redis, json_encode( $cars ), 'cache-cars-info');
         return $cars;
     }
 
 
     public function del_cache_cars_info($post_id) {
-        if ('product' == get_post_type($post_id)) {
+        //if ('product' == get_post_type($post_id)) {
             wp_cache_delete('cache-cars-info');
-        }
+        //}
     }
     
     public function run_del_cache_cars_info() {
@@ -116,7 +124,15 @@
         add_action( 'delete_post', array( $this, 'del_cache_cars_info' ) );
     }
 
-
+    public function get_all_brands (){
+        $brands = [];
+        $query = "SELECT t.name, t.slug
+                FROM $this->terms t
+                JOIN $this->term_taxonomy tt ON t.term_id = tt.term_id
+                WHERE tt.taxonomy = 'pa_brand';";
+        $brands = $this->db->get_results($query);
+        return $brands;
+    }
 }
 
 

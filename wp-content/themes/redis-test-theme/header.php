@@ -137,7 +137,7 @@
 						============================================= -->
 						<nav class="primary-menu with-arrows">
 							<ul class="menu-container">
-								<li class="menu-item current"><a class="menu-link" href="demo-car.html"><div>Home</div></a></li>
+								<li class="menu-item current"><a class="menu-link" href="/"><div>Home</div></a></li>
 								<!-- Mega Menu -->
 								<li class="menu-item mega-menu"><a class="menu-link" href="demo-car-single.html"><div>Models</div></a>
 									<div class="mega-menu-content mega-menu-style-2">

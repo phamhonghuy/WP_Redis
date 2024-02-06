@@ -13,6 +13,13 @@
  */
 
 get_header();
+try {
+    // create redis instance
+    //var_dump(wp_cache_get('cars-bmw','cache-cars-info'));
+   //wp_die();
+} catch (Exception $ex) {
+    echo $ex->getMessage();
+}
 ?>
 		<!-- Content
 		============================================= -->

@@ -1,17 +1,18 @@
 <?php
 /* Template Name: Shop Template */
 get_header();
-$brands_array = ['audi'=>'Audi', 'bmw'=>'BMW', 'lexus'=>'Lexus', 'mercedes'=>'Mercedes'];
 $handle = Redis_Theme_Handler::get_instance();
+$brands_array = $handle->get_all_brands();
+
 if (isset($_GET['brand'])) {
-    $brands = $_GET['brand'];
+    $brands_get = $_GET['brand'];
     // echo '<pre>'; var_dump($brands); die('---DEBUG HERE---');
-    $brands = wc_string_to_array($brands);
+    $brands_sel = wc_string_to_array($brands_get);
 
 } else {
-    $brands = ['bmw','audi'];
+    $brands_sel = [];
 }
-$cars = $handle->get_cars($brands);
+$cars = $handle->get_cars($brands_sel);
 ?>
 		<!-- Content
 		============================================= -->
@@ -31,9 +32,9 @@ $cars = $handle->get_cars($brands);
 									<select class="selectpicker customjs" name='brand[]' title="Select Brand"  data-size="10" data-live-search="true" multiple data-live-search="true" style="width:100%;">
 										<optgroup label="All Brands">
 											<?php
-                                            foreach ($brands_array as $key => $brand){
-                                                $selected = in_array($key, $brands) ? 'selected' : '';
-                                                echo "<option value='$key' $selected>$brand</option>";
+                                            foreach ($brands_array as $brand){
+                                                $selected = ($brands_sel == $brand) ? 'selected' : '';
+                                                echo "<option value='$brand->slug' $selected>$brand->name</option>";
                                             }
                                             ?>
 										</optgroup>
